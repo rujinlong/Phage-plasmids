@@ -15,11 +15,11 @@ RUN micromamba install -y -n base -c bioconda -c conda-forge hmmer \
 ENV PATH="/opt/conda/bin:$PATH"
 
 # Copy tyPPing package and test example for verification
-COPY pyproject.toml /opt/tyPPing/
-COPY src/ /opt/tyPPing/src/
-COPY tyPPing_input_data/ /opt/tyPPing/tyPPing_input_data/
-COPY tyPPing_signature_profiles.zip /opt/tyPPing/
-COPY test_example/ /opt/tyPPing/test_example/
+COPY tyPPing/pyproject.toml /opt/tyPPing/
+COPY tyPPing/src/ /opt/tyPPing/src/
+COPY tyPPing/tyPPing_input_data/ /opt/tyPPing/tyPPing_input_data/
+COPY tyPPing/tyPPing_signature_profiles.zip /opt/tyPPing/
+COPY tyPPing/test_example/ /opt/tyPPing/test_example/
 
 # Install tyPPing Python package
 RUN pip install --break-system-packages /opt/tyPPing/

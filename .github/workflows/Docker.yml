@@ -1,0 +1,84 @@
+name: Docker
+
+on:
+  push:
+    tags:
+      - "v*"
+      - "d*"
+
+jobs:
+  push_to_registry:
+    name: Push Docker image to Docker Hub
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - dockerfile: ./tyPPing/Dockerfile
+            image: jinlongru/typping2
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Free up disk space
+        run: |
+          echo "Disk usage before cleanup:"
+          df -h
+          # Remove unnecessary software and packages
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          # Clean package manager caches
+          sudo apt-get clean
+          sudo apt-get autoremove -y
+          # Remove swap file
+          sudo swapoff -a
+          sudo rm -f /swapfile
+          # Clean Docker
+          docker system prune -a -f
+          echo "Disk usage after cleanup:"
+          df -h
+
+      - name: Delete huge unnecessary tools folder
+        run: cd /opt && find . -maxdepth 1 -mindepth 1 '!' -path ./containerd '!' -path ./actionarchivecache '!' -path ./runner '!' -path ./runner-cache -exec rm -rf '{}' ';'
+
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: |
+            image=moby/buildkit:buildx-stable-1
+            network=host
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ matrix.image }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: "."
+          file: ${{ matrix.dockerfile }}
+          # platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=${{ matrix.image }}
+          cache-to: type=inline
