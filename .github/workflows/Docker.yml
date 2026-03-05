@@ -41,7 +41,6 @@ jobs:
           docker system prune -a -f
           echo "Disk usage after cleanup:"
           df -h
-
       - name: Delete huge unnecessary tools folder
         run: cd /opt && find . -maxdepth 1 -mindepth 1 '!' -path ./containerd '!' -path ./actionarchivecache '!' -path ./runner '!' -path ./runner-cache -exec rm -rf '{}' ';'
 
