@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(unzip:*)",
+      "Bash(docker build:*)",
+      "Bash(docker run:*)",
+      "Bash(pip install:*)",
+      "Bash(python3:*)",
+      "Bash(uv pip:*)",
+      "Bash(uv:*)",
+      "Bash(source:*)"
+    ]
+  }
+}
