@@ -4,7 +4,16 @@
       "Bash(.venv/bin/python:*)",
       "Bash(ls:*)",
       "Read(//private/tmp/typping_test_mt/**)",
-      "Read(//private/tmp/typping_test_st/**)"
+      "Read(//private/tmp/typping_test_st/**)",
+      "Bash(python:*)",
+      "Bash(pip install:*)",
+      "Bash(pytest:*)",
+      "Bash(python3:*)",
+      "Read(//Users/allen/.local/share/uv/python/cpython-3.13.11-macos-aarch64-none/bin/**)",
+      "Bash(conda env list)",
+      "Bash(pip3 list)",
+      "Bash(.venv/bin/typping run:*)",
+      "Read(//private/tmp/typping_test/**)"
     ]
   }
 }

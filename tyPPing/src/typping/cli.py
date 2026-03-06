@@ -122,6 +122,31 @@ def run(
         contig_size = genome_size.rename(columns={"genome_id": "contig_id"} if "genome_id" in genome_size.columns else {})
         if "contig_id" not in contig_size.columns:
             contig_size = contig_size.rename(columns={contig_size.columns[0]: "contig_id"})
+
+        # Validate: check for duplicate column names after rename
+        dup_cols = contig_size.columns[contig_size.columns.duplicated()].unique().tolist()
+        if dup_cols:
+            typer.echo(
+                f"Error: Duplicate column names found in genome size file: {dup_cols}\n"
+                f"Columns in file: {contig_size.columns.tolist()}\n"
+                f"Please check your genome size file: {sizes_file}",
+                err=True,
+            )
+            raise typer.Exit(1)
+
+        # Validate: check for duplicate contig_id values
+        dup_contigs = contig_size[contig_size["contig_id"].duplicated(keep=False)]
+        if not dup_contigs.empty:
+            n_dup = dup_contigs["contig_id"].nunique()
+            examples = dup_contigs["contig_id"].unique()[:10].tolist()
+            typer.echo(
+                f"Error: Found {n_dup} duplicated contig_id(s) in genome size file: {sizes_file}\n"
+                f"Examples: {examples}\n"
+                f"Each contig_id must appear only once. Please deduplicate your input.",
+                err=True,
+            )
+            raise typer.Exit(1)
+
         contig_size = contig_size.merge(n_protein_per_contig, on="contig_id", how="left").fillna(0)
         contig_size["n_protein"] = contig_size["n_protein"].astype(int)
 

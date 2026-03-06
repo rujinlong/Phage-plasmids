@@ -1,0 +1,81 @@
+Number of threads: 30
+Memory per node: 204800 MB
+[0;34m[2026-03-06 13:08:57] INFO: 
+CMD: /var/spool/slurmd/job34293618/slurm_script typping run protein_to_genome.tsv contig_sizes.tsv hmmsearch_output.tbl.out 
+path: /ictstr01/home/viro/jinlong.ru/project/p0111/e1/out_p0111e1_typping[0m
+
+-------------------  Welcome to tyPPing  ----------------------
+-----------------------------START-----------------------------
+
+Mode: draft
+Protein to genome path: protein_to_genome.tsv
+Genome size path:       contig_sizes.tsv
+HMM search output path: hmmsearch_output.tbl.out
+Output directory path:  .
+Reading and processing the input data...
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ /usr/local/lib/python3.13/dist-packages/typping/cli.py:125 in run            │
+│                                                                              │
+│   122 │   │   contig_size = genome_size.rename(columns={"genome_id": "contig │
+│   123 │   │   if "contig_id" not in contig_size.columns:                     │
+│   124 │   │   │   contig_size = contig_size.rename(columns={contig_size.colu │
+│ ❱ 125 │   │   contig_size = contig_size.merge(n_protein_per_contig, on="cont │
+│   126 │   │   contig_size["n_protein"] = contig_size["n_protein"].astype(int │
+│   127 │   │                                                                  │
+│   128 │   │   # Filter contigs: size <= 300000 and n_protein >= 3            │
+│                                                                              │
+│ /usr/local/lib/python3.13/dist-packages/pandas/core/frame.py:12884 in merge  │
+│                                                                              │
+│   12881 │   │                                                                │
+│   12882 │   │   from pandas.core.reshape.merge import merge                  │
+│   12883 │   │                                                                │
+│ ❱ 12884 │   │   return merge(                                                │
+│   12885 │   │   │   self,                                                    │
+│   12886 │   │   │   right,                                                   │
+│   12887 │   │   │   how=how,                                                 │
+│                                                                              │
+│ /usr/local/lib/python3.13/dist-packages/pandas/core/reshape/merge.py:385 in  │
+│ merge                                                                        │
+│                                                                              │
+│    382 │   │   │   validate=validate,                                        │
+│    383 │   │   )                                                             │
+│    384 │   else:                                                             │
+│ ❱  385 │   │   op = _MergeOperation(                                         │
+│    386 │   │   │   left_df,                                                  │
+│    387 │   │   │   right_df,                                                 │
+│    388 │   │   │   how=how,                                                  │
+│                                                                              │
+│ /usr/local/lib/python3.13/dist-packages/pandas/core/reshape/merge.py:1018 in │
+│ __init__                                                                     │
+│                                                                              │
+│   1015 │   │   │   self.join_names,                                          │
+│   1016 │   │   │   left_drop,                                                │
+│   1017 │   │   │   right_drop,                                               │
+│ ❱ 1018 │   │   ) = self._get_merge_keys()                                    │
+│   1019 │   │                                                                 │
+│   1020 │   │   if left_drop:                                                 │
+│   1021 │   │   │   self.left = self.left._drop_labels_or_levels(left_drop)   │
+│                                                                              │
+│ /usr/local/lib/python3.13/dist-packages/pandas/core/reshape/merge.py:1633 in │
+│ _get_merge_keys                                                              │
+│                                                                              │
+│   1630 │   │   │   │   │   │   # Then we're either Hashable or a wrong-lengt │
+│   1631 │   │   │   │   │   │   #  the latter of which will raise             │
+│   1632 │   │   │   │   │   │   lk = cast(Hashable, lk)                       │
+│ ❱ 1633 │   │   │   │   │   │   left_keys.append(left._get_label_or_level_val │
+│   1634 │   │   │   │   │   │   join_names.append(lk)                         │
+│   1635 │   │   │   │   │   else:                                             │
+│   1636 │   │   │   │   │   │   # work-around for merge_asof(left_index=True) │
+│                                                                              │
+│ /usr/local/lib/python3.13/dist-packages/pandas/core/generic.py:1792 in       │
+│ _get_label_or_level_values                                                   │
+│                                                                              │
+│    1789 │   │   │   │   multi_message = ""                                   │
+│    1790 │   │   │                                                            │
+│    1791 │   │   │   label_axis_name = "column" if axis == 0 else "index"     │
+│ ❱  1792 │   │   │   raise ValueError(                                        │
+│    1793 │   │   │   │   f"The {label_axis_name} label '{key}' is not unique. │
+│    1794 │   │   │   )                                                        │
+│    1795                                                                      │
+╰──────────────────────────────────────────────────────────────────────────────╯
+ValueError: The column label 'contig_id' is not unique.
