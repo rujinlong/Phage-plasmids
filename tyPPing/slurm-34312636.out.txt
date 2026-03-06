@@ -1,0 +1,119 @@
+Number of threads: 30
+Memory per node: 204800 MB
+[0;34m[2026-03-06 19:19:42] INFO: 
+CMD: /var/spool/slurmd/job34312636/slurm_script typping run protein_to_genome.tsv contig_sizes.tsv hmmsearch_output.tbl.out 
+path: /ictstr01/home/viro/jinlong.ru/project/p0111/e1/out_p0111e1_typping[0m
+
+-------------------  Welcome to tyPPing  ----------------------
+-----------------------------START-----------------------------
+
+Mode: draft
+Protein to genome path: protein_to_genome.tsv
+Genome size path:       contig_sizes.tsv
+HMM search output path: hmmsearch_output.tbl.out
+Output directory path:  .
+Reading and processing the input data...
+Reading and processing the protein-to-profile HMM output file...
+Protein-to-profile HMM output file processed successfully
+P-P prediction for each P-P type has started...
+Using 10 parallel workers for 10 P-P types...
+Searching for  pSLy3
+Searching for  P1_1
+Searching for  pKpn
+Searching for  pMT1
+Searching for  P1_2
+Searching for  pCAV
+Searching for  SSU5_pHCM2
+Searching for  N15
+Searching for  AB_1
+Searching for  cp32
+P-P prediction by P-P type finished successfully
+Summarizing the tyPPing predictions...
+Writing the results...
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ /usr/local/lib/python3.13/dist-packages/typping/cli.py:261 in run            │
+│                                                                              │
+│   258 │   │   df = df.fillna("NA")                                           │
+│   259 │   │   return df                                                      │
+│   260 │                                                                      │
+│ ❱ 261 │   all_hits = _format_output(all_hits)                                │
+│   262 │   final_pred = _format_output(final_pred)                            │
+│   263 │                                                                      │
+│   264 │   all_hits.to_csv(summary_path, sep="\t", index=False)               │
+│                                                                              │
+│ /usr/local/lib/python3.13/dist-packages/typping/cli.py:244 in _format_output │
+│                                                                              │
+│   241 │   │   │   │   │   ["size", "proteins", "cutoff", "hits", "tolerance" │
+│   242 │   │   for col in int_cols:                                           │
+│   243 │   │   │   if col in df.columns:                                      │
+│ ❱ 244 │   │   │   │   df[col] = df[col].apply(lambda x: str(int(x)) if pd.no │
+│   245 │   │   # Format score columns: remove trailing .0 (R prints 1 not 1.0 │
+│   246 │   │   score_cols = [c for c in df.columns if "score" in c.lower() or │
+│   247 │   │   for col in score_cols:                                         │
+│                                                                              │
+│ /usr/local/lib/python3.13/dist-packages/pandas/core/series.py:5084 in apply  │
+│                                                                              │
+│   5081 │   │   │   by_row=by_row,                                            │
+│   5082 │   │   │   args=args,                                                │
+│   5083 │   │   │   kwargs=kwargs,                                            │
+│ ❱ 5084 │   │   ).apply()                                                     │
+│   5085 │                                                                     │
+│   5086 │   def _reindex_indexer(                                             │
+│   5087 │   │   self,                                                         │
+│                                                                              │
+│ /usr/local/lib/python3.13/dist-packages/pandas/core/apply.py:1520 in apply   │
+│                                                                              │
+│   1517 │   │   │   return self.apply_compat()                                │
+│   1518 │   │                                                                 │
+│   1519 │   │   # self.func is Callable                                       │
+│ ❱ 1520 │   │   return self.apply_standard()                                  │
+│   1521 │                                                                     │
+│   1522 │   def agg(self):                                                    │
+│   1523 │   │   result = super().agg()                                        │
+│                                                                              │
+│ /usr/local/lib/python3.13/dist-packages/pandas/core/apply.py:1578 in         │
+│ apply_standard                                                               │
+│                                                                              │
+│   1575 │   │                                                                 │
+│   1576 │   │   else:                                                         │
+│   1577 │   │   │   curried = func                                            │
+│ ❱ 1578 │   │   mapped = obj._map_values(mapper=curried)                      │
+│   1579 │   │                                                                 │
+│   1580 │   │   if len(mapped) and isinstance(mapped[0], ABCSeries):          │
+│   1581 │   │   │   # GH#43986 Need to do list(mapped) in order to get treate │
+│                                                                              │
+│ /usr/local/lib/python3.13/dist-packages/pandas/core/base.py:1022 in          │
+│ _map_values                                                                  │
+│                                                                              │
+│   1019 │   │   if isinstance(arr, ExtensionArray):                           │
+│   1020 │   │   │   return arr.map(mapper, na_action=na_action)               │
+│   1021 │   │                                                                 │
+│ ❱ 1022 │   │   return algorithms.map_array(arr, mapper, na_action=na_action) │
+│   1023 │                                                                     │
+│   1024 │   def value_counts(                                                 │
+│   1025 │   │   self,                                                         │
+│                                                                              │
+│ /usr/local/lib/python3.13/dist-packages/pandas/core/algorithms.py:1710 in    │
+│ map_array                                                                    │
+│                                                                              │
+│   1707 │   # we must convert to python types                                 │
+│   1708 │   values = arr.astype(object, copy=False)                           │
+│   1709 │   if na_action is None:                                             │
+│ ❱ 1710 │   │   return lib.map_infer(values, mapper)                          │
+│   1711 │   else:                                                             │
+│   1712 │   │   return lib.map_infer_mask(values, mapper, mask=isna(values).v │
+│   1713                                                                       │
+│                                                                              │
+│ in pandas._libs.lib.map_infer:3071                                           │
+│                                                                              │
+│ /usr/local/lib/python3.13/dist-packages/typping/cli.py:244 in <lambda>       │
+│                                                                              │
+│   241 │   │   │   │   │   ["size", "proteins", "cutoff", "hits", "tolerance" │
+│   242 │   │   for col in int_cols:                                           │
+│   243 │   │   │   if col in df.columns:                                      │
+│ ❱ 244 │   │   │   │   df[col] = df[col].apply(lambda x: str(int(x)) if pd.no │
+│   245 │   │   # Format score columns: remove trailing .0 (R prints 1 not 1.0 │
+│   246 │   │   score_cols = [c for c in df.columns if "score" in c.lower() or │
+│   247 │   │   for col in score_cols:                                         │
+╰──────────────────────────────────────────────────────────────────────────────╯
+ValueError: invalid literal for int() with base 10: 'CP019188.1'

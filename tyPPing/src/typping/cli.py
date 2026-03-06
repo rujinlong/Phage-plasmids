@@ -237,7 +237,7 @@ def run(
     def _format_output(df: pd.DataFrame) -> pd.DataFrame:
         df = df.copy()
         # Convert size/count columns to nullable int
-        int_cols = [c for c in df.columns if any(k in c.lower() for k in
+        int_cols = [c for c in df.columns if "list" not in c.lower() and any(k in c.lower() for k in
                     ["size", "proteins", "cutoff", "hits", "tolerance"])]
         for col in int_cols:
             if col in df.columns:
