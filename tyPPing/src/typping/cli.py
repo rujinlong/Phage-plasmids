@@ -119,9 +119,12 @@ def run(
     if is_draft:
         # Draft mode: protein_to_genome has contig_id column
         n_protein_per_contig = protein_to_genome.groupby("contig_id").size().reset_index(name="n_protein")
-        contig_size = genome_size.rename(columns={"genome_id": "contig_id"} if "genome_id" in genome_size.columns else {})
-        if "contig_id" not in contig_size.columns:
-            contig_size = contig_size.rename(columns={contig_size.columns[0]: "contig_id"})
+        if "contig_id" in genome_size.columns:
+            contig_size = genome_size
+        else:
+            contig_size = genome_size.rename(columns={"genome_id": "contig_id"} if "genome_id" in genome_size.columns else {})
+            if "contig_id" not in contig_size.columns:
+                contig_size = contig_size.rename(columns={contig_size.columns[0]: "contig_id"})
 
         # Validate: check for duplicate column names after rename
         dup_cols = contig_size.columns[contig_size.columns.duplicated()].unique().tolist()

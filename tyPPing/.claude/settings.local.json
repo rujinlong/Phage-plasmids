@@ -13,7 +13,10 @@
       "Bash(conda env list)",
       "Bash(pip3 list)",
       "Bash(.venv/bin/typping run:*)",
-      "Read(//private/tmp/typping_test/**)"
+      "Read(//private/tmp/typping_test/**)",
+      "Bash(pip show:*)",
+      "Bash(uv run pytest tests/ -v)",
+      "Bash(uv run:*)"
     ]
   }
 }
