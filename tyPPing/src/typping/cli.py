@@ -2,6 +2,7 @@
 
 import sys
 import time
+from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 from typing import Optional
 
@@ -14,6 +15,45 @@ app = typer.Typer(
 )
 
 
+def _predict_category(category, hmm_filtered, is_draft, minproteins_score,
+                       minproteins_cutoff, compositions_df, size_df,
+                       contig_to_genome=None):
+    """Process a single PP category (worker function for parallel execution).
+
+    Must be a top-level function to be picklable by ProcessPoolExecutor.
+    """
+    from .prediction import (
+        composition_branch_complete,
+        composition_branch_draft,
+        minproteins_branch_complete,
+        minproteins_branch_draft,
+    )
+
+    # SSU5 → SSU5_pHCM2
+    if category == "SSU5":
+        hmm_filtered = hmm_filtered.copy()
+        hmm_filtered["PP_category"] = "SSU5_pHCM2"
+        category = "SSU5_pHCM2"
+
+    if is_draft:
+        mp_result = minproteins_branch_draft(
+            category, hmm_filtered, minproteins_score, minproteins_cutoff,
+            size_df, contig_to_genome,
+        )
+        comp_result = composition_branch_draft(
+            category, hmm_filtered, compositions_df, size_df,
+        )
+    else:
+        mp_result = minproteins_branch_complete(
+            category, hmm_filtered, minproteins_score, minproteins_cutoff, size_df,
+        )
+        comp_result = composition_branch_complete(
+            category, hmm_filtered, compositions_df, size_df,
+        )
+
+    return category, mp_result, comp_result
+
+
 @app.command()
 def run(
     map_file: str = typer.Option(..., "-m", "--map", help="Protein-to-genome mapping file (TSV)"),
@@ -23,6 +63,7 @@ def run(
     compositions: str = typer.Option(..., "--compositions", help="Compositions information table"),
     profiles: str = typer.Option(..., "--profiles", help="Profile information table"),
     mode: str = typer.Option("auto", "--mode", help="Mode: auto, complete, or draft"),
+    threads: int = typer.Option(1, "-t", "--threads", help="Number of parallel workers for P-P type prediction (default: 1)"),
 ):
     """Run tyPPing prediction pipeline."""
     import numpy as np
@@ -38,12 +79,6 @@ def run(
         read_protein_to_genome,
     )
     from .merge import merge_predictions_complete, merge_predictions_draft
-    from .prediction import (
-        composition_branch_complete,
-        composition_branch_draft,
-        minproteins_branch_complete,
-        minproteins_branch_draft,
-    )
 
     start_time = time.time()
 
@@ -111,39 +146,45 @@ def run(
     typer.echo("P-P prediction for each P-P type has started...")
 
     pp_categories = hmm_output["PP_category"].dropna().unique()
+    n_workers = min(threads, len(pp_categories))
+
+    # Prepare shared arguments
+    size_df = contig_size if is_draft else genome_size
+    ctg_to_genome = contig_to_genome if is_draft else None
 
     mp_results = []
     comp_results = []
 
-    for category in pp_categories:
-        mapped = map_category_to_pptype(category)
-        typer.echo(f"Searching for  {mapped}")
+    if n_workers > 1:
+        typer.echo(f"Using {n_workers} parallel workers for {len(pp_categories)} P-P types...")
+        with ProcessPoolExecutor(max_workers=n_workers) as executor:
+            futures = []
+            for category in pp_categories:
+                hmm_filtered = hmm_output[hmm_output["PP_category"] == category].copy()
+                future = executor.submit(
+                    _predict_category, category, hmm_filtered, is_draft,
+                    minproteins_score, minproteins_cutoff, compositions_df,
+                    size_df, ctg_to_genome,
+                )
+                futures.append((category, future))
 
-        hmm_filtered = hmm_output[hmm_output["PP_category"] == category].copy()
-
-        # SSU5 → SSU5_pHCM2
-        if category == "SSU5":
-            hmm_filtered["PP_category"] = "SSU5_pHCM2"
-            category = "SSU5_pHCM2"
-
-        if is_draft:
-            mp_result = minproteins_branch_draft(
-                category, hmm_filtered, minproteins_score, minproteins_cutoff,
-                contig_size, contig_to_genome,
+            for orig_category, future in futures:
+                cat, mp_result, comp_result = future.result()
+                typer.echo(f"Searching for  {map_category_to_pptype(orig_category)}")
+                mp_results.append(mp_result)
+                comp_results.append(comp_result)
+    else:
+        for category in pp_categories:
+            mapped = map_category_to_pptype(category)
+            typer.echo(f"Searching for  {mapped}")
+            hmm_filtered = hmm_output[hmm_output["PP_category"] == category].copy()
+            _, mp_result, comp_result = _predict_category(
+                category, hmm_filtered, is_draft,
+                minproteins_score, minproteins_cutoff, compositions_df,
+                size_df, ctg_to_genome,
             )
-            comp_result = composition_branch_draft(
-                category, hmm_filtered, compositions_df, contig_size,
-            )
-        else:
-            mp_result = minproteins_branch_complete(
-                category, hmm_filtered, minproteins_score, minproteins_cutoff, genome_size,
-            )
-            comp_result = composition_branch_complete(
-                category, hmm_filtered, compositions_df, genome_size,
-            )
-
-        mp_results.append(mp_result)
-        comp_results.append(comp_result)
+            mp_results.append(mp_result)
+            comp_results.append(comp_result)
 
     typer.echo("P-P prediction by P-P type finished successfully")
 

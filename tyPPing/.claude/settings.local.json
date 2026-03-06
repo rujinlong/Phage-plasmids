@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(.venv/bin/python:*)",
+      "Bash(ls:*)",
+      "Read(//private/tmp/typping_test_mt/**)",
+      "Read(//private/tmp/typping_test_st/**)"
+    ]
+  }
+}
